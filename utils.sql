@@ -7,35 +7,6 @@ INSERT INTO colors(color)
     UNION
     SELECT DISTINCT color2 AS color FROM animals;
 
-CREATE TABLE IF NOT EXISTS animals_colors(
-    animal_id INTEGER ,
-    color1 INTEGER,
-    color2 INTEGER,
-    FOREIGN KEY (animal_id) REFERENCES animals ('index'),
-    FOREIGN KEY (color1) REFERENCES colors(id),
-    FOREIGN KEY (color2) REFERENCES colors(id));
-
-INSERT INTO animals_colors(animal_id, color1, color2)
-SELECT animals."index", animals.color1, animals.color2
-FROM animals;
-
-UPDATE animals_colors
-SET color1 = (SELECT colors.id
-            FROM colors
-            where color1 = colors.color)
-WHERE EXISTS (
-    SELECT * FROM colors
-    WHERE color1 = colors.color);
-
-UPDATE animals_colors
-SET color2 = (SELECT colors.id
-            FROM colors
-            where color2 = colors.color)
-WHERE EXISTS (
-    SELECT * FROM colors
-    WHERE color2 = colors.color);
-
-
 
 
 CREATE TABLE types(
@@ -45,17 +16,6 @@ CREATE TABLE types(
 INSERT INTO types(type)
     SELECT DISTINCT animal_type FROM animals;
 
-CREATE TABLE IF NOT EXISTS animals_types(
-    animal_id INTEGER,
-    animal_type_id  INTEGER,
-    FOREIGN KEY (animal_id) REFERENCES animals ('index'),
-    FOREIGN KEY (animal_type_id) REFERENCES types (id));
-
-INSERT INTO animals_types(animal_id, animal_type_id)
-    SELECT animals.'index', types.id FROM animals
-    JOIN types ON animals.animal_type = types.type;
-
-
 
 
 CREATE TABLE breeds(
@@ -64,17 +24,6 @@ CREATE TABLE breeds(
 
 INSERT INTO breeds(breed)
     SELECT DISTINCT breed FROM animals;
-
-CREATE TABLE IF NOT EXISTS animals_breeds(
-    animal_id INTEGER,
-    breed_id  INTEGER,
-    FOREIGN KEY (animal_id) REFERENCES animals ('index'),
-    FOREIGN KEY (breed_id) REFERENCES breeds (id));
-
-INSERT INTO animals_breeds(animal_id, breed_id)
-    SELECT animals.'index', breeds.id FROM animals
-    JOIN breeds ON animals.breed = breeds.breed;
-
 
 
 
@@ -103,31 +52,24 @@ CREATE TABLE IF NOT EXISTS animals_final(
     animal_type INTEGER,
     name VARCHAR(50),
     breed INTEGER,
-    colors INTEGER,
+    color INTEGER,
     date_of_birth DATE,
     outcome_id INTEGER,
-    FOREIGN KEY (animal_type) REFERENCES animals_types(animal_type_id),
-    FOREIGN KEY (breed) REFERENCES animals_breeds(breed_id),
-    FOREIGN KEY (colors) REFERENCES animals_colors(animal_id) ,
+    FOREIGN KEY (animal_type) REFERENCES types(id),
+    FOREIGN KEY (breed) REFERENCES breeds(id),
+    FOREIGN KEY (color) REFERENCES colors(id) ,
     FOREIGN KEY (outcome_id) REFERENCES outcome(id)
 );
 
-INSERT INTO animals_final (age_upon_outcome, animal_id, animal_type, name, breed, colors, date_of_birth, outcome_id )
-SELECT  animals.age_upon_outcome, animals.animal_id, animals_types.animal_type_id,
-       animals.name, animals_breeds.breed_id AS breed, animals_colors.animal_id,  animals.date_of_birth, outcome.id
+INSERT INTO animals_final (age_upon_outcome, animal_id, animal_type, name, breed, color, date_of_birth, outcome_id )
+SELECT  animals.age_upon_outcome, animals.animal_id, types.id,
+       animals.name, breeds.id AS breed, colors.id as main_color,  animals.date_of_birth, outcome.id
 FROM animals
-JOIN animals_colors
-    ON animals.'index' = animals_colors.animal_id
-JOIN animals_breeds
-ON animals.'index' = animals_breeds.animal_id
-JOIN animals_types
-ON animals.'index' = animals_types.animal_id
+JOIN colors
+    ON colors.color = color1
+JOIN breeds
+    ON animals.breed = breeds.breed
+JOIN types
+    ON animals.animal_type = types.type
 JOIN outcome
     ON animals.'index' = outcome.id;
-
-
-
-
-
-
-
