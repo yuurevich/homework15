@@ -65,11 +65,11 @@ INSERT INTO animals_final (age_upon_outcome, animal_id, animal_type, name, breed
 SELECT  animals.age_upon_outcome, animals.animal_id, types.id,
        animals.name, breeds.id AS breed, colors.id as main_color,  animals.date_of_birth, outcome.id
 FROM animals
-JOIN colors
+LEFT JOIN colors
     ON colors.color = color1
-JOIN breeds
+LEFT JOIN breeds
     ON animals.breed = breeds.breed
-JOIN types
+LEFT JOIN types
     ON animals.animal_type = types.type
-JOIN outcome
+LEFT JOIN outcome
     ON animals.'index' = outcome.id;
